@@ -5,6 +5,10 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 
+// Constants
+const string JPG_EXTENSION = ".jpg";
+const string PNG_EXTENSION = ".png";
+
 // Fields
 int pngImagesCount = 0;
 int jpgImagesCount = 0;
@@ -30,14 +34,14 @@ ImageCodecInfo GetEncoder(ImageFormat format)
 void WriteTotalImagesConverted()
 {
 	Console.Write("\r" + new string(' ', Console.BufferWidth - 1) + "\r");
-	Console.Write("> Total images converted: {0}/{1}.", jpgImagesCount, pngImagesCount);
+	Console.Write("> Total images converted: {0}/{1}.", ++jpgImagesCount, pngImagesCount);
 }
 
 // Program start
 Console.WriteLine("> Getting directory info.");
 DirectoryInfo directoryInfo = new DirectoryInfo(".");
-FileInfo[] files = directoryInfo.GetFiles("*.png");
-pngImagesCount = files?.Count() ?? 0;
+FileInfo[] pngsToConvert = directoryInfo.GetFiles($"*{PNG_EXTENSION}");
+pngImagesCount = pngsToConvert?.Count() ?? 0;
 
 // Check if there are images to convert
 if (pngImagesCount > 0)
@@ -57,7 +61,7 @@ else
 // Main loop
 Console.WriteLine("> Converting...");
 
-foreach (FileInfo file in files)
+foreach (FileInfo file in pngsToConvert)
 {
 	try
 	{
@@ -85,7 +89,12 @@ foreach (FileInfo file in files)
 
 		// Copy the JPG stream into a file stream
 		jpgImagesTotalSize += jpgStream.Length;
-		var fileStream = new FileStream(String.Format(@"{0}\{1}.jpg", folder, ++jpgImagesCount), FileMode.OpenOrCreate, FileAccess.ReadWrite);
+
+		var fileStream = new FileStream(
+			string.Format(@"{0}\{1}" + JPG_EXTENSION, folder, file.Name.Replace(".png", string.Empty)),
+			FileMode.OpenOrCreate,
+			FileAccess.ReadWrite);
+		
 		jpgStream.Seek(0, SeekOrigin.Begin);
 		jpgStream.CopyTo(fileStream);
 		fileStream.Dispose();
