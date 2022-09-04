@@ -4,10 +4,13 @@
 // Usings
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 // Constants
 const string JPG_EXTENSION = ".jpg";
 const string PNG_EXTENSION = ".png";
+const string NEW_DIRECTORY_NAME = "Converted images";
+const int ONE_MEGABYTE = 1000000;
 
 // Fields
 int pngImagesCount = 0;
@@ -38,6 +41,14 @@ void WriteTotalImagesConverted()
 }
 
 // Program start
+if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+{
+	Console.WriteLine("> This app only runs on Windows.");
+	Console.WriteLine("> Press any key to exit.");
+	Console.ReadKey();
+	return -1;
+}
+
 Console.WriteLine("> Getting directory info.");
 DirectoryInfo directoryInfo = new DirectoryInfo(".");
 FileInfo[] pngsToConvert = directoryInfo.GetFiles($"*{PNG_EXTENSION}");
@@ -80,7 +91,7 @@ foreach (FileInfo file in pngsToConvert)
 		pngImage.Dispose();
 
 		// If directory does not exist, create it
-		string folder = string.Format(@"{0}\PngToJpgConverter", Directory.GetCurrentDirectory());
+		string folder = string.Format(@"{0}\{1}", Directory.GetCurrentDirectory(), NEW_DIRECTORY_NAME);
 
 		if (!Directory.Exists(folder))
 		{
@@ -91,7 +102,7 @@ foreach (FileInfo file in pngsToConvert)
 		jpgImagesTotalSize += jpgStream.Length;
 
 		var fileStream = new FileStream(
-			string.Format(@"{0}\{1}" + JPG_EXTENSION, folder, file.Name.Replace(".png", string.Empty)),
+			string.Format(@"{0}\{1}" + JPG_EXTENSION, folder, file.Name.Replace(PNG_EXTENSION, string.Empty)),
 			FileMode.OpenOrCreate,
 			FileAccess.ReadWrite);
 		
@@ -100,6 +111,7 @@ foreach (FileInfo file in pngsToConvert)
 		fileStream.Dispose();
 		jpgStream.Dispose();		
 		WriteTotalImagesConverted();		
+		File.Delete(file.FullName);
 	}
 	catch (Exception ex)
 	{
@@ -109,8 +121,8 @@ foreach (FileInfo file in pngsToConvert)
 
 // Program end
 Console.WriteLine("\n> Convertion ended.");
-Console.WriteLine("> Total size before convertion: {0:0.##}Mb.", pngImagesTotalSize / 1000000);
-Console.WriteLine("> Total size after convertion: {0:0.##}Mb.", jpgImagesTotalSize / 1000000);
+Console.WriteLine("> Total size before convertion: {0:0.##}Mb.", pngImagesTotalSize / ONE_MEGABYTE);
+Console.WriteLine("> Total size after convertion: {0:0.##}Mb.", jpgImagesTotalSize / ONE_MEGABYTE);
 Console.WriteLine("> Press any key to exit.");
 Console.ReadKey();
 return 0;
