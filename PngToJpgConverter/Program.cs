@@ -105,12 +105,16 @@ foreach (FileInfo file in pngsToConvert)
 			string.Format(@"{0}\{1}" + JPG_EXTENSION, folder, file.Name.Replace(PNG_EXTENSION, string.Empty)),
 			FileMode.OpenOrCreate,
 			FileAccess.ReadWrite);
-		
+
 		jpgStream.Seek(0, SeekOrigin.Begin);
 		jpgStream.CopyTo(fileStream);
 		fileStream.Dispose();
-		jpgStream.Dispose();		
-		WriteTotalImagesConverted();		
+		jpgStream.Dispose();
+
+		// Write in console how many files were converted
+		WriteTotalImagesConverted();
+
+		// Delete te old file
 		File.Delete(file.FullName);
 	}
 	catch (Exception ex)
